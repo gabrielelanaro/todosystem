@@ -1,0 +1,103 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+  The Todo Management System helps track, organize, and
+  manage complex tasks throughout coding sessions. It provides visibility
+  into progress and ensures systematic completion of multi-step work.
+
+  When to Use the Todo System
+
+  Use For:
+
+  - Complex multi-step tasks (3+ distinct steps)
+  - Non-trivial implementations requiring careful planning
+  - Multiple related tasks provided by user
+  - User explicitly requests todo tracking
+  - Performance optimization or refactoring work
+  - Feature implementations with multiple components
+
+  Skip For:
+
+  - Single straightforward tasks
+  - Trivial operations (< 3 simple steps)
+  - Purely conversational/informational requests
+  - One-line code changes or comments
+
+  Task States & Management
+
+  States:
+
+  - pending - Task not yet started
+  - in_progress - Currently working on (LIMIT: ONE at a time)
+  - completed - Task finished successfully
+
+  Workflow Rules:
+
+  1. Real-time updates - Update status as you work
+  2. Immediate completion - Mark completed right after finishing
+  3. Single focus - Only ONE task in_progress at any time
+  4. Complete before starting - Finish current task before beginning new
+  ones
+  5. Remove irrelevant - Delete tasks no longer needed
+
+  Completion Requirements
+
+  Only Mark Complete When:
+
+  - Task is FULLY accomplished
+  - All tests pass
+  - Implementation is complete
+  - No unresolved errors
+
+  Keep as In-Progress If:
+
+  - Tests are failing
+  - Implementation is partial
+  - Encountered unresolved errors
+  - Missing dependencies/files
+
+  Best Practices
+
+  Task Creation:
+
+  - Use specific, actionable descriptions
+  - Break complex tasks into smaller steps
+  - Include clear success criteria
+  - Reference specific files/functions when relevant
+
+  Task Tracking:
+
+  - Update todos proactively throughout work
+  - Create follow-up tasks discovered during implementation
+  - Use priority levels (high/medium/low) for organization
+  - Maintain clean, current todo list
+
+  Communication:
+
+  - Todos provide user visibility into progress
+  - Show systematic approach to problem-solving
+  - Demonstrate thoroughness and organization
+  - Help users understand scope and timeline
+
+  Example Workflow
+
+  1. User requests feature implementation
+  2. Create todos breaking down the work
+  3. Mark first task as in_progress
+  4. Complete task, mark as completed immediately
+  5. Mark next task as in_progress
+  6. Repeat until all tasks completed
+  7. Add any discovered follow-up tasks
+
+  Integration with Other Tools
+
+  - Search tools - Use before creating todos to understand scope
+  - File operations - Reference specific files in task descriptions
+  - Testing - Include test validation as separate todos
+  - Git operations - Track commits/pushes as distinct tasks
+
+  This system ensures systematic, organized completion of complex
+  development tasks while providing clear progress visibility to users.
+

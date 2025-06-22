@@ -1,105 +1,118 @@
 # TodoSystem
 
-A comprehensive todo system for task management. Built with TypeScript for enhanced type safety and developer experience.
+A comprehensive CLI tool that replicates Claude Code's todo system for Cursor users. Built with TypeScript for enhanced type safety and developer experience.
 
 ## Features
 
+### CLI Commands
+- **`todosystem init`**: Initialize todo system in your project
+- **`todosystem add <content>`**: Add a new todo item
+- **`todosystem list`**: List all todos in a table format
+- **`todosystem show`**: Display beautiful todo dashboard with progress
+- **`todosystem update <id>`**: Update existing todo items
+- **`todosystem delete <id>`**: Delete todo items
+- **`todosystem status`**: Show quick status summary
+
+### MCP Integration
 - **todo_read**: Read the current todo list
-- **todo_write**: Replace the entire todo list
+- **todo_write**: Replace the entire todo list  
 - **todo_add**: Add a new todo item
 - **todo_update**: Update an existing todo item
 - **todo_delete**: Delete a todo item
 
 ## Installation
 
+### Global Installation (Recommended)
+
 ```bash
-npm install
+npm install -g todosystem
 ```
+
+### From Source
+
+```bash
+git clone https://github.com/gabrielelanaro/todosystem.git
+cd todosystem
+npm install
+npm run build
+npm link
+```
+
+## Quick Start
+
+1. **Install TodoSystem globally:**
+   ```bash
+   npm install -g todosystem
+   ```
+
+2. **Initialize in your project:**
+   ```bash
+   cd your-project
+   todosystem init
+   ```
+
+3. **Add the MCP configuration to Cursor:**
+   Copy the displayed configuration to your Cursor settings.
+
+4. **Start using todos:**
+   ```bash
+   todosystem add "Implement new feature" --priority high
+   todosystem show
+   ```
+
+## CLI Usage
+
+### Initialize Project
+```bash
+todosystem init
+```
+Creates `.todosystem/` directory, adds `todosystem.mdc` to `.cursor/rules/`, and displays MCP configuration.
+
+### Managing Todos
+```bash
+# Add todos
+todosystem add "Complete documentation"
+todosystem add "Fix bug in parser" --priority high
+todosystem add "Refactor utils" --priority low
+
+# View todos
+todosystem list                    # Table format
+todosystem show                    # Beautiful dashboard
+todosystem status                  # Quick summary
+
+# Update todos
+todosystem update <id> --status in_progress
+todosystem update <id> --content "Updated content"
+todosystem update <id> --priority high
+
+# Delete todos
+todosystem delete <id>
+```
+
+### Beautiful Dashboard
+The `todosystem show` command displays:
+- 📊 Progress bar and completion percentage
+- 🚨 High priority items needing attention
+- 🔄 Currently in-progress tasks
+- ✅ Completion statistics
+- 🎨 Color-coded status and priority indicators
 
 ## Development
 
 ### Building the Project
 
-The project is written in TypeScript and needs to be compiled to JavaScript:
-
 ```bash
 npm run build
-```
-
-### Running the Server
-
-```bash
-npm start
-```
-
-For development with auto-restart:
-
-```bash
-npm run dev
-```
-
-### Type Checking
-
-To check TypeScript types without generating output:
-
-```bash
-npm run type-check
 ```
 
 ### Available Scripts
 
 - `npm run build` - Compile TypeScript to JavaScript
-- `npm start` - Build and run the server
-- `npm run dev` - Build and run with file watching
+- `npm run start:mcp` - Run MCP server
+- `npm run start:cli` - Run CLI
+- `npm run dev` - Build and run CLI with watching
 - `npm run clean` - Remove the dist directory
 - `npm run type-check` - Check TypeScript types without compilation
-
-### Available Tools
-
-#### `todo_read`
-Reads the current todo list.
-
-**Parameters:** None
-
-**Example Response:**
-```json
-[
-  {
-    "id": "1",
-    "content": "Complete project documentation",
-    "status": "pending",
-    "priority": "high"
-  }
-]
-```
-
-#### `todo_add`
-Adds a new todo item.
-
-**Parameters:**
-- `content` (string, required): The content of the todo item
-- `priority` (string, optional): Priority level ("high", "medium", "low"). Default: "medium"
-
-#### `todo_update`
-Updates an existing todo item.
-
-**Parameters:**
-- `id` (string, required): The ID of the todo item to update
-- `content` (string, optional): Updated content
-- `status` (string, optional): Updated status ("pending", "in_progress", "completed")
-- `priority` (string, optional): Updated priority ("high", "medium", "low")
-
-#### `todo_delete`
-Deletes a todo item.
-
-**Parameters:**
-- `id` (string, required): The ID of the todo item to delete
-
-#### `todo_write`
-Replaces the entire todo list.
-
-**Parameters:**
-- `todos` (array, required): Array of todo items with id, content, status, and priority
 
 ### Todo Item Structure
 
@@ -114,68 +127,63 @@ interface TodoItem {
 }
 ```
 
-The project includes comprehensive TypeScript types in `src/types.ts` for all todo operations and MCP interactions.
+## Cursor Integration
 
-## Setup and Configuration
+### Automatic Setup
+After running `todosystem init`, the tool will display the MCP configuration. Simply copy and paste it into your Cursor settings.
 
-### Method 1: MCP Configuration File
+### Manual Configuration
+If you need to manually configure the MCP server, add this to your Cursor settings:
 
-1. Create/edit the MCP configuration file:
-   - **macOS/Linux:** `~/.config/claude-code/mcp_servers.json`
-   - **Windows:** `%APPDATA%\claude-code\mcp_servers.json`
-
-2. Add this configuration:
 ```json
 {
   "mcpServers": {
     "todosystem": {
       "command": "node",
-      "args": ["/absolute/path/to/todosystem/dist/index.js"],
-      "env": {}
+      "args": ["/path/to/todosystem/dist/mcp-server.js"]
     }
   }
 }
 ```
 
-3. Replace `/absolute/path/to/todosystem/` with your actual path
+Replace `/path/to/todosystem/` with the actual installation path.
 
-### Method 2: Claude Code Settings
-
-1. Open Claude Code settings
-2. Navigate to MCP Servers section
-3. Add new server:
-   - **Name:** `todosystem`
-   - **Command:** `node`
-   - **Args:** `["/absolute/path/to/todosystem/dist/index.js"]`
-
-### Method 3: Environment Variable
-
-Set the MCP_SERVERS environment variable:
-
-```bash
-export MCP_SERVERS='{"todosystem":{"command":"node","args":["/absolute/path/to/todosystem/dist/index.js"]}}'
-```
+### How It Works
+- **CLI commands** manage todos in your project's `.todosystem/todos.json`
+- **MCP integration** allows Cursor to read and write the same todos
+- **`.cursor/rules/todosystem.mdc`** provides todo management guidelines to Cursor
+- Both systems work with the same data, keeping everything in sync
 
 ### Verification
-
-After setup, restart Claude Code and verify the MCP server is loaded:
-
-1. Check application logs for connection messages
-2. Try using a todo command to test functionality
-3. Look for `todos.json` file creation in the project directory
-
-### Troubleshooting
-
-- Ensure Node.js is installed and accessible in PATH
-- Verify file permissions are correct
-- Check Claude Code logs for error messages
-- Test the MCP server independently with `npm start`
-
-**Note**: Make sure to run `npm run build` before using the MCP server to ensure the TypeScript code is compiled to JavaScript.
+- Run `todosystem status` to see todo counts
+- Use Cursor's todo commands through MCP
+- Check that `.todosystem/todos.json` updates with both methods
 
 ## Data Storage
 
-Todo items are stored in `todos.json` in the project root directory. The file is created automatically when the first todo is added.
+Todo items are stored in `.todosystem/todos.json` in your project directory. This file is created automatically when you run `todosystem init` or add your first todo.
+
+### File Structure
+```
+your-project/
+├── .todosystem/
+│   └── todos.json          # Your project's todos
+├── .cursor/
+│   └── rules/
+│       └── todosystem.mdc  # Cursor integration rules
+└── ... (your project files)
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests: `npm test`
+5. Build the project: `npm run build`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
 ## License
 

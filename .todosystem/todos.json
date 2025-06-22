@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1750604668774l6cu5a1z9",
+    "content": "Complete project documentation",
+    "status": "in_progress",
+    "priority": "high"
+  },
+  {
+    "id": "1750604670649vunkiemvm",
+    "content": "Test CLI functionality",
+    "status": "pending",
+    "priority": "medium"
+  },
+  {
+    "id": "175060467258493nectvav",
+    "content": "Write README examples",
+    "status": "pending",
+    "priority": "low"
+  }
+]
