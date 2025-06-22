@@ -3,6 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
+<!-- TodoSystem v2.0.0 - Multiple Lists Support -->
   The Todo Management System helps track, organize, and
   manage complex tasks throughout coding sessions. It provides visibility
   into progress and ensures systematic completion of multi-step work.
