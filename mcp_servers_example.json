@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "claude-code-todos": {
+      "command": "node",
+      "args": ["/home/gabriele/workspace/todosystem/src/index.js"],
+      "env": {}
+    }
+  }
+}

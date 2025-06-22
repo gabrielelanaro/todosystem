@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ts-setup-1",
+    "content": "Install TypeScript and related dependencies (@types/node, typescript)",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-setup-2",
+    "content": "Create tsconfig.json with proper configuration for Node.js project",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-types-1",
+    "content": "Create TypeScript interfaces and types for Todo items and MCP schemas",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-convert-1",
+    "content": "Convert src/index.js to src/index.ts with proper TypeScript typing",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-convert-2",
+    "content": "Convert test.js to test.ts with proper TypeScript typing",
+    "status": "completed",
+    "priority": "medium"
+  },
+  {
+    "id": "ts-config-1",
+    "content": "Update package.json scripts and configuration for TypeScript build process",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-build-1",
+    "content": "Add build script and output directory configuration",
+    "status": "completed",
+    "priority": "medium"
+  },
+  {
+    "id": "ts-test-1",
+    "content": "Test the TypeScript build and ensure everything works correctly",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "id": "ts-docs-1",
+    "content": "Update README.md with TypeScript build instructions and development workflow",
+    "status": "completed",
+    "priority": "low"
+  }
+]
