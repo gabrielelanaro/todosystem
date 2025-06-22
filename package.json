@@ -1,5 +1,5 @@
 {
-  "name": "todosystem",
+  "name": "@gabrielelanaro/todosystem",
   "version": "1.0.0",
   "description": "Todo system for task management with CLI and MCP integration",
   "main": "dist/cli.js",
