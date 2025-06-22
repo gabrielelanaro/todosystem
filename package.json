@@ -9,12 +9,16 @@
   },
   "files": [
     "dist/",
+    "src/",
     "templates/",
-    "README.md"
+    "README.md",
+    "tsconfig.json"
   ],
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
+    "postinstall": "npm run build",
+    "install": "npm run build",
     "start:mcp": "npm run build && node dist/todosystem.mcp",
     "start:cli": "npm run build && node dist/cli.js",
     "dev": "npm run build && node --watch dist/cli.js",
