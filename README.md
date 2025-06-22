@@ -18,7 +18,7 @@ todosystem init
 ```
 
 This creates:
-- `.todosystem/` directory for storing your todos
+- `~/.todosystem/` directory in your home directory for storing your todos (customizable via `TODOSYSTEM_DIR` env variable)
 - `.cursor/rules/todosystem.mdc` with rules for Cursor integration
 - Displays MCP configuration (copy this!)
 
@@ -131,24 +131,52 @@ Real-time monitoring for active development:
 - **`todo_delete`** - Delete a todo item
 
 ### How It Works
-- CLI commands manage todos in `.todosystem/todos.json`
+- CLI commands manage todos in `~/.todosystem/` (or custom location via `TODOSYSTEM_DIR`)
 - MCP integration allows Cursor to read/write the same todos
 - `.cursor/rules/todosystem.mdc` provides todo management guidelines
 - Both systems work with the same data, keeping everything in sync
 
 ## Data Storage
 
-Todo items are stored in `.todosystem/todos.json` in your project directory. This file is created automatically when you run `todosystem init` or add your first todo.
+Todo items are stored in `~/.todosystem/` in your home directory by default. You can customize this location by setting the `TODOSYSTEM_DIR` environment variable. The directory is created automatically when you run `todosystem init` or add your first todo.
 
 ### File Structure
 ```
+~/.todosystem/              # Default location (customizable)
+├── lists/
+│   ├── default.json        # Default todo list
+│   └── work.json          # Additional lists (optional)
+├── metadata.json          # List metadata and settings
+└── todos.json             # Legacy single-list format (auto-migrated)
+
 your-project/
-├── .todosystem/
-│   └── todos.json          # Your project's todos
 ├── .cursor/
 │   └── rules/
 │       └── todosystem.mdc  # Cursor integration rules
 └── ... (your project files)
+```
+
+### Environment Variable
+
+You can customize the storage location by setting the `TODOSYSTEM_DIR` environment variable:
+
+```bash
+# Use a custom directory
+export TODOSYSTEM_DIR="/path/to/your/todos"
+todosystem init
+
+# Or set it just for MCP in Cursor settings
+{
+  "mcpServers": {
+    "todosystem": {
+      "command": "node",
+      "args": ["/path/to/global/installation/dist/mcp-server.js"],
+      "env": {
+        "TODOSYSTEM_DIR": "/path/to/your/todos"
+      }
+    }
+  }
+}
 ```
 
 ### Todo Item Structure

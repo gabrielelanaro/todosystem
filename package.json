@@ -1,6 +1,6 @@
 {
   "name": "@gabrielelanaro/todosystem",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Todo system with multiple named lists for task management with CLI and MCP integration",
   "main": "dist/cli.js",
   "type": "module",

@@ -27,6 +27,7 @@ import {
   SwitchListParams,
   MCPToolResponse,
   MCPToolArgs,
+  getTodoSystemDir,
 } from "./types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,29 +40,11 @@ export class TodoManager {
   private legacyTodoFile: string;
 
   constructor() {
-    this.todoSystemDir = this.findTodoSystemDir();
+    this.todoSystemDir = getTodoSystemDir();
     this.listsDir = path.join(this.todoSystemDir, 'lists');
     this.metadataFile = path.join(this.todoSystemDir, 'metadata.json');
     this.legacyTodoFile = path.join(this.todoSystemDir, 'todos.json');
     this.init();
-  }
-
-  private findTodoSystemDir(): string {
-    // Start from current working directory and look for .todosystem
-    let currentDir = process.cwd();
-    while (currentDir !== path.dirname(currentDir)) {
-      const todoSystemDir = path.join(currentDir, '.todosystem');
-      try {
-        if (require('fs').existsSync(todoSystemDir)) {
-          return todoSystemDir;
-        }
-      } catch (error) {
-        // Continue searching
-      }
-      currentDir = path.dirname(currentDir);
-    }
-    // Fallback to current directory
-    return path.join(process.cwd(), '.todosystem');
   }
 
   private async init(): Promise<void> {

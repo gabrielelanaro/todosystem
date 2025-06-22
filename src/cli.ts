@@ -13,6 +13,8 @@ import {
   TodoStatus,
   TodoList,
   TodoListsMetadata,
+  getTodoSystemDir,
+  getProjectTodoSystemDir,
 } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,7 +27,7 @@ class TodoSystemCLI {
   private legacyTodoFile: string;
 
   constructor() {
-    this.todoSystemDir = path.join(process.cwd(), '.todosystem');
+    this.todoSystemDir = getTodoSystemDir();
     this.listsDir = path.join(this.todoSystemDir, 'lists');
     this.metadataFile = path.join(this.todoSystemDir, 'metadata.json');
     this.legacyTodoFile = path.join(this.todoSystemDir, 'todos.json');

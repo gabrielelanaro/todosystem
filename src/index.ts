@@ -21,6 +21,7 @@ import {
   WriteTodosParams,
   MCPToolResponse,
   MCPToolArgs,
+  getTodoSystemDir,
 } from "./types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,7 +32,8 @@ class TodoManager {
   private todos: TodoItem[];
 
   constructor() {
-    this.todoFile = path.join(__dirname, '..', 'todos.json');
+    const todoSystemDir = getTodoSystemDir();
+    this.todoFile = path.join(todoSystemDir, 'todos.json');
     this.todos = [];
     this.loadTodos();
   }
