@@ -116,20 +116,60 @@ interface TodoItem {
 
 The project includes comprehensive TypeScript types in `src/types.ts` for all todo operations and MCP interactions.
 
-## Integration with Claude Code
+## Setup and Configuration
 
-To use this MCP server with Claude Code, add it to your MCP configuration:
+### Method 1: MCP Configuration File
 
+1. Create/edit the MCP configuration file:
+   - **macOS/Linux:** `~/.config/claude-code/mcp_servers.json`
+   - **Windows:** `%APPDATA%\claude-code\mcp_servers.json`
+
+2. Add this configuration:
 ```json
 {
   "mcpServers": {
     "todosystem": {
       "command": "node",
-      "args": ["/path/to/todosystem/dist/index.js"]
+      "args": ["/absolute/path/to/todosystem/dist/index.js"],
+      "env": {}
     }
   }
 }
 ```
+
+3. Replace `/absolute/path/to/todosystem/` with your actual path
+
+### Method 2: Claude Code Settings
+
+1. Open Claude Code settings
+2. Navigate to MCP Servers section
+3. Add new server:
+   - **Name:** `todosystem`
+   - **Command:** `node`
+   - **Args:** `["/absolute/path/to/todosystem/dist/index.js"]`
+
+### Method 3: Environment Variable
+
+Set the MCP_SERVERS environment variable:
+
+```bash
+export MCP_SERVERS='{"todosystem":{"command":"node","args":["/absolute/path/to/todosystem/dist/index.js"]}}'
+```
+
+### Verification
+
+After setup, restart Claude Code and verify the MCP server is loaded:
+
+1. Check application logs for connection messages
+2. Try using a todo command to test functionality
+3. Look for `todos.json` file creation in the project directory
+
+### Troubleshooting
+
+- Ensure Node.js is installed and accessible in PATH
+- Verify file permissions are correct
+- Check Claude Code logs for error messages
+- Test the MCP server independently with `npm start`
 
 **Note**: Make sure to run `npm run build` before using the MCP server to ensure the TypeScript code is compiled to JavaScript.
 
