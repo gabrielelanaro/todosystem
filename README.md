@@ -1,6 +1,6 @@
-# Claude Code Todo MCP Server
+# TodoSystem
 
-An MCP (Model Context Protocol) server that provides access to Claude Code's todo list system, allowing you to manage tasks programmatically. Built with TypeScript for enhanced type safety and developer experience.
+A comprehensive todo system for task management. Built with TypeScript for enhanced type safety and developer experience.
 
 ## Features
 
@@ -123,9 +123,9 @@ To use this MCP server with Claude Code, add it to your MCP configuration:
 ```json
 {
   "mcpServers": {
-    "claude-code-todo": {
+    "todosystem": {
       "command": "node",
-      "args": ["/path/to/claude-code-todo-mcp/dist/index.js"]
+      "args": ["/path/to/todosystem/dist/index.js"]
     }
   }
 }

@@ -1,4 +1,4 @@
-# Claude Code Todo MCP Setup Instructions
+# TodoSystem Setup Instructions
 
 ## Method 1: MCP Configuration File
 
@@ -10,9 +10,9 @@
 ```json
 {
   "mcpServers": {
-    "claude-code-todos": {
+    "todosystem": {
       "command": "node",
-      "args": ["/absolute/path/to/todosystem/src/index.js"],
+      "args": ["/absolute/path/to/todosystem/dist/index.js"],
       "env": {}
     }
   }
@@ -26,23 +26,23 @@
 1. Open Claude Code settings
 2. Navigate to MCP Servers section
 3. Add new server:
-   - **Name:** `claude-code-todos`
+   - **Name:** `todosystem`
    - **Command:** `node`
-   - **Args:** `["/absolute/path/to/todosystem/src/index.js"]`
+   - **Args:** `["/absolute/path/to/todosystem/dist/index.js"]`
 
 ## Method 3: Environment Variable
 
 Set the MCP_SERVERS environment variable:
 
 ```bash
-export MCP_SERVERS='{"claude-code-todos":{"command":"node","args":["/absolute/path/to/todosystem/src/index.js"]}}'
+export MCP_SERVERS='{"todosystem":{"command":"node","args":["/absolute/path/to/todosystem/dist/index.js"]}}'
 ```
 
 ## Verification
 
 After setup, restart Claude Code and verify the MCP server is loaded:
 
-1. Check Claude Code logs for MCP connection messages
+1. Check application logs for connection messages
 2. Try using a todo command to test functionality
 3. Look for `todos.json` file creation in the project directory
 

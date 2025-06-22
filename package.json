@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-todo-mcp",
+  "name": "todosystem",
   "version": "1.0.0",
-  "description": "MCP server for Claude Code todo list system",
+  "description": "Todo system for task management",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
