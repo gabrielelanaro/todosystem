@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-class TodoManager {
+export class TodoManager {
     constructor() {
         // Find the project root by looking for .todosystem directory
         this.todoFile = this.findTodoFile();

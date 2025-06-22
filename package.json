@@ -18,7 +18,7 @@
     "start:cli": "npm run build && node dist/cli.js",
     "dev": "npm run build && node --watch dist/cli.js",
     "clean": "rm -rf dist",
-    "test": "npm run build && node test.ts",
+    "test": "npm run build && node dist/test.js",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

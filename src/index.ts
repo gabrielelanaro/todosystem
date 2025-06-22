@@ -26,34 +26,14 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export class TodoManager {
+class TodoManager {
   private todoFile: string;
   private todos: TodoItem[];
 
   constructor() {
-    // Find the project root by looking for .todosystem directory
-    this.todoFile = this.findTodoFile();
+    this.todoFile = path.join(__dirname, '..', 'todos.json');
     this.todos = [];
     this.loadTodos();
-  }
-
-  private findTodoFile(): string {
-    // Start from current working directory and look for .todosystem
-    let currentDir = process.cwd();
-    while (currentDir !== path.dirname(currentDir)) {
-      const todoSystemDir = path.join(currentDir, '.todosystem');
-      const todoFile = path.join(todoSystemDir, 'todos.json');
-      try {
-        if (require('fs').existsSync(todoSystemDir)) {
-          return todoFile;
-        }
-      } catch (error) {
-        // Continue searching
-      }
-      currentDir = path.dirname(currentDir);
-    }
-    // Fallback to current directory
-    return path.join(process.cwd(), '.todosystem', 'todos.json');
   }
 
   async loadTodos(): Promise<void> {
@@ -66,13 +46,6 @@ export class TodoManager {
   }
 
   async saveTodos(): Promise<void> {
-    // Ensure the .todosystem directory exists
-    const todoDir = path.dirname(this.todoFile);
-    try {
-      await fs.mkdir(todoDir, { recursive: true });
-    } catch (error) {
-      // Directory might already exist
-    }
     await fs.writeFile(this.todoFile, JSON.stringify(this.todos, null, 2));
   }
 
@@ -138,7 +111,7 @@ export class TodoManager {
 
 const server = new Server(
   {
-    name: "todosystem-mcp",
+    name: "claude-code-todo-mcp",
     version: "1.0.0",
   },
   {
@@ -357,7 +330,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
 async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("TodoSystem MCP server running on stdio");
+  console.error("Claude Code Todo MCP server running on stdio");
 }
 
 main().catch((error: unknown) => {

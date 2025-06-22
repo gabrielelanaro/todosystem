@@ -8,7 +8,8 @@ A comprehensive CLI tool that replicates Claude Code's todo system for Cursor us
 - **`todosystem init`**: Initialize todo system in your project
 - **`todosystem add <content>`**: Add a new todo item
 - **`todosystem list`**: List all todos in a table format
-- **`todosystem show`**: Display beautiful todo dashboard with progress
+- **`todosystem show`**: Display beautiful todo dashboard (static snapshot)
+- **`todosystem watch`**: Watch todos with real-time updates (live dashboard)
 - **`todosystem update <id>`**: Update existing todo items
 - **`todosystem delete <id>`**: Delete todo items
 - **`todosystem status`**: Show quick status summary
@@ -22,10 +23,10 @@ A comprehensive CLI tool that replicates Claude Code's todo system for Cursor us
 
 ## Installation
 
-### Global Installation (Recommended)
+### Install Directly from GitHub (Recommended)
 
 ```bash
-npm install -g todosystem
+npm install -g git+https://github.com/gabrielelanaro/todosystem.git
 ```
 
 ### From Source
@@ -40,9 +41,9 @@ npm link
 
 ## Quick Start
 
-1. **Install TodoSystem globally:**
+1. **Install TodoSystem directly from GitHub:**
    ```bash
-   npm install -g todosystem
+   npm install -g git+https://github.com/gabrielelanaro/todosystem.git
    ```
 
 2. **Initialize in your project:**
@@ -77,7 +78,8 @@ todosystem add "Refactor utils" --priority low
 
 # View todos
 todosystem list                    # Table format
-todosystem show                    # Beautiful dashboard
+todosystem show                    # Beautiful dashboard (static snapshot)
+todosystem watch                   # Live updating dashboard with real-time updates
 todosystem status                  # Quick summary
 
 # Update todos
@@ -89,13 +91,25 @@ todosystem update <id> --priority high
 todosystem delete <id>
 ```
 
-### Beautiful Dashboard
-The `todosystem show` command displays:
-- 📊 Progress bar and completion percentage
+### Dashboard Views
+
+**Static Dashboard (`todosystem show`)**
+Shows a beautiful snapshot of your current todos:
+- 📊 Progress bar and completion percentage  
 - 🚨 High priority items needing attention
 - 🔄 Currently in-progress tasks
 - ✅ Completion statistics
 - 🎨 Color-coded status and priority indicators
+
+**Live Dashboard (`todosystem watch`)**
+Provides real-time monitoring with automatic updates:
+- ⏰ Live updates when todos change
+- 🔄 Real-time synchronization with MCP operations in Cursor
+- 📱 Automatic refresh when you modify todos from another terminal
+- 🕒 Timestamp showing last update
+- All features from the static dashboard
+
+**Note**: The live dashboard automatically updates when you modify todos from another terminal or when Cursor's MCP integration makes changes. Press `Ctrl+C` to exit the live view.
 
 ## Development
 

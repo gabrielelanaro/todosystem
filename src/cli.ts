@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { promises as fs } from 'fs';
+import { promises as fs, watch } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
@@ -141,15 +141,12 @@ class TodoSystemCLI {
     console.log(table.toString());
   }
 
-  async showBeautifulDisplay(): Promise<void> {
-    const todos = await this.loadTodos();
-    
+  private generateDisplayStatic(todos: TodoItem[]): string {
     if (todos.length === 0) {
-      console.log(boxen(
+      return boxen(
         chalk.yellow('📝 No todos found.\n\nUse "todosystem add <content>" to create your first todo!'),
         { padding: 1, borderStyle: 'round', borderColor: 'yellow' }
-      ));
-      return;
+      );
     }
 
     const pending = todos.filter(t => t.status === 'pending');
@@ -191,12 +188,121 @@ class TodoSystemCLI {
       });
     }
 
-    console.log(boxen(display, {
+    return boxen(display, {
       padding: 1,
       margin: 1,
       borderStyle: 'round',
       borderColor: 'cyan'
-    }));
+    });
+  }
+
+  private generateDisplay(todos: TodoItem[]): string {
+    if (todos.length === 0) {
+      return boxen(
+        chalk.yellow('📝 No todos found.\n\nUse "todosystem add <content>" to create your first todo!'),
+        { padding: 1, borderStyle: 'round', borderColor: 'yellow' }
+      );
+    }
+
+    const pending = todos.filter(t => t.status === 'pending');
+    const inProgress = todos.filter(t => t.status === 'in_progress');
+    const completed = todos.filter(t => t.status === 'completed');
+    
+    const completionRate = Math.round((completed.length / todos.length) * 100);
+    const progressBar = '█'.repeat(Math.floor(completionRate / 5)) + '░'.repeat(20 - Math.floor(completionRate / 5));
+    
+    let display = chalk.bold.blue('📋 TodoSystem Dashboard\n\n');
+    
+    // Add timestamp
+    const now = new Date().toLocaleTimeString();
+    display += chalk.gray(`Updated: ${now}\n\n`);
+    
+    // Progress section
+    display += chalk.gray('Progress: ') + chalk.green(`${completionRate}%`) + '\n';
+    display += chalk.green(progressBar) + ` ${completed.length}/${todos.length}\n\n`;
+    
+    // Summary
+    display += chalk.yellow(`⏳ Pending: ${pending.length}\n`);
+    display += chalk.blue(`🔄 In Progress: ${inProgress.length}\n`);
+    display += chalk.green(`✅ Completed: ${completed.length}\n\n`);
+    
+    // High priority items
+    const highPriority = todos.filter(t => t.priority === 'high' && t.status !== 'completed');
+    if (highPriority.length > 0) {
+      display += chalk.red.bold('🚨 High Priority Items:\n');
+      highPriority.forEach(todo => {
+        const icon = todo.status === 'in_progress' ? '🔄' : '⏳';
+        display += chalk.red(`  ${icon} ${todo.content}\n`);
+      });
+      display += '\n';
+    }
+    
+    // In progress items
+    if (inProgress.length > 0) {
+      display += chalk.blue.bold('🔄 Currently Working On:\n');
+      inProgress.forEach(todo => {
+        const priorityIcon = todo.priority === 'high' ? '🔥' : 
+                           todo.priority === 'medium' ? '⚡' : '📝';
+        display += chalk.blue(`  ${priorityIcon} ${todo.content}\n`);
+      });
+      display += '\n';
+    }
+
+    display += chalk.gray('Press Ctrl+C to exit');
+
+    return boxen(display, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan'
+    });
+  }
+
+  async showBeautifulDisplay(): Promise<void> {
+    const todos = await this.loadTodos();
+    console.log(this.generateDisplayStatic(todos));
+  }
+
+  async watchTodos(): Promise<void> {
+    // Clear screen initially
+    console.clear();
+    
+    // Display initial state
+    const todos = await this.loadTodos();
+    console.log(this.generateDisplay(todos));
+    
+    // Set up file watching for real-time updates
+    try {
+      const watcher = watch(this.todoFile, { persistent: true }, async (eventType) => {
+        if (eventType === 'change') {
+          // Small delay to ensure file write is complete
+          setTimeout(async () => {
+            try {
+              console.clear();
+              const updatedTodos = await this.loadTodos();
+              console.log(this.generateDisplay(updatedTodos));
+            } catch (error) {
+              // File might be temporarily unavailable during write
+            }
+          }, 100);
+        }
+      });
+
+      // Handle Ctrl+C gracefully
+      process.on('SIGINT', () => {
+        watcher.close();
+        console.clear();
+        console.log(chalk.green('\n👋 TodoSystem watch closed. Use "todosystem watch" to restart.'));
+        process.exit(0);
+      });
+
+      // Keep the process alive
+      await new Promise(() => {}); // This will run indefinitely until Ctrl+C
+      
+    } catch (error) {
+      console.error(chalk.red('❌ Error setting up file watcher. Falling back to static display.'));
+      console.log(this.generateDisplay(todos));
+    }
   }
 
   async updateTodo(id: string, updates: Partial<Omit<TodoItem, 'id'>>): Promise<void> {
@@ -288,9 +394,16 @@ program
 
 program
   .command('show')
-  .description('Show beautiful todo dashboard')
+  .description('Show beautiful todo dashboard (static snapshot)')
   .action(async () => {
     await cli.showBeautifulDisplay();
+  });
+
+program
+  .command('watch')
+  .description('Watch todos with real-time updates (live dashboard)')
+  .action(async () => {
+    await cli.watchTodos();
   });
 
 program
