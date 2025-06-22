@@ -1,7 +1,7 @@
 {
   "name": "@gabrielelanaro/todosystem",
-  "version": "1.0.0",
-  "description": "Todo system for task management with CLI and MCP integration",
+  "version": "2.0.0",
+  "description": "Todo system with multiple named lists for task management with CLI and MCP integration",
   "main": "dist/cli.js",
   "type": "module",
   "bin": {
@@ -23,10 +23,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
-    "commander": "^12.0.0",
-    "chalk": "^5.3.0",
     "boxen": "^8.0.1",
+    "chalk": "^5.3.0",
     "cli-table3": "^0.6.3",
+    "commander": "^12.0.0",
     "inquirer": "^10.0.0"
   },
   "keywords": [
@@ -40,8 +40,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^24.0.3",
     "@types/inquirer": "^9.0.0",
+    "@types/node": "^24.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

@@ -16,11 +16,30 @@ export interface TodoItem {
     priority: TodoPriority;
 }
 /**
+ * Todo List metadata interface
+ */
+export interface TodoList {
+    name: string;
+    description?: string;
+    created: string;
+    lastModified: string;
+    totalTodos: number;
+    completedTodos: number;
+}
+/**
+ * Todo lists metadata storage interface
+ */
+export interface TodoListsMetadata {
+    activeList: string;
+    lists: Record<string, Omit<TodoList, 'name'>>;
+}
+/**
  * Parameters for adding a new todo
  */
 export interface AddTodoParams {
     content: string;
     priority?: TodoPriority;
+    list_name?: string;
 }
 /**
  * Parameters for updating a todo
@@ -30,18 +49,46 @@ export interface UpdateTodoParams {
     content?: string;
     status?: TodoStatus;
     priority?: TodoPriority;
+    list_name?: string;
 }
 /**
  * Parameters for deleting a todo
  */
 export interface DeleteTodoParams {
     id: string;
+    list_name?: string;
 }
 /**
  * Parameters for writing/replacing the entire todo list
  */
 export interface WriteTodosParams {
     todos: TodoItem[];
+    list_name?: string;
+}
+/**
+ * Parameters for reading todo list
+ */
+export interface ReadTodosParams {
+    list_name?: string;
+}
+/**
+ * Parameters for creating a new todo list
+ */
+export interface CreateListParams {
+    list_name: string;
+    description?: string;
+}
+/**
+ * Parameters for deleting a todo list
+ */
+export interface DeleteListParams {
+    list_name: string;
+}
+/**
+ * Parameters for switching active todo list
+ */
+export interface SwitchListParams {
+    list_name: string;
 }
 /**
  * MCP Tool response content interface
@@ -60,4 +107,4 @@ export interface MCPToolResponse {
 /**
  * MCP Tool call arguments - generic type for tool parameters
  */
-export type MCPToolArgs = AddTodoParams | UpdateTodoParams | DeleteTodoParams | WriteTodosParams | Record<string, never>;
+export type MCPToolArgs = AddTodoParams | UpdateTodoParams | DeleteTodoParams | WriteTodosParams | ReadTodosParams | CreateListParams | DeleteListParams | SwitchListParams | Record<string, never>;

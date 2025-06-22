@@ -9,20 +9,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class TodoManager {
     constructor() {
-        // Find the project root by looking for .todosystem directory
-        this.todoFile = this.findTodoFile();
-        this.todos = [];
-        this.loadTodos();
+        this.todoSystemDir = this.findTodoSystemDir();
+        this.listsDir = path.join(this.todoSystemDir, 'lists');
+        this.metadataFile = path.join(this.todoSystemDir, 'metadata.json');
+        this.legacyTodoFile = path.join(this.todoSystemDir, 'todos.json');
+        this.init();
     }
-    findTodoFile() {
+    findTodoSystemDir() {
         // Start from current working directory and look for .todosystem
         let currentDir = process.cwd();
         while (currentDir !== path.dirname(currentDir)) {
             const todoSystemDir = path.join(currentDir, '.todosystem');
-            const todoFile = path.join(todoSystemDir, 'todos.json');
             try {
                 if (require('fs').existsSync(todoSystemDir)) {
-                    return todoFile;
+                    return todoSystemDir;
                 }
             }
             catch (error) {
@@ -31,83 +31,242 @@ export class TodoManager {
             currentDir = path.dirname(currentDir);
         }
         // Fallback to current directory
-        return path.join(process.cwd(), '.todosystem', 'todos.json');
+        return path.join(process.cwd(), '.todosystem');
     }
-    async loadTodos() {
+    async init() {
+        await this.ensureDirectories();
+        await this.migrateLegacyData();
+        await this.ensureDefaultList();
+    }
+    async ensureDirectories() {
         try {
-            const data = await fs.readFile(this.todoFile, 'utf8');
-            this.todos = JSON.parse(data);
+            await fs.mkdir(this.todoSystemDir, { recursive: true });
+            await fs.mkdir(this.listsDir, { recursive: true });
         }
         catch (error) {
-            this.todos = [];
+            // Directories might already exist
         }
     }
-    async saveTodos() {
-        // Ensure the .todosystem directory exists
-        const todoDir = path.dirname(this.todoFile);
+    async migrateLegacyData() {
         try {
-            await fs.mkdir(todoDir, { recursive: true });
+            // Check if legacy todos.json exists
+            const legacyData = await fs.readFile(this.legacyTodoFile, 'utf8');
+            const legacyTodos = JSON.parse(legacyData);
+            // Check if metadata already exists
+            try {
+                await fs.access(this.metadataFile);
+                return; // Already migrated
+            }
+            catch {
+                // Need to migrate
+            }
+            // Create default list with legacy todos
+            if (legacyTodos.length > 0) {
+                const defaultListFile = path.join(this.listsDir, 'default.json');
+                await fs.writeFile(defaultListFile, JSON.stringify(legacyTodos, null, 2));
+                // Create metadata
+                const metadata = {
+                    activeList: 'default',
+                    lists: {
+                        default: {
+                            description: 'Default todo list (migrated from legacy)',
+                            created: new Date().toISOString(),
+                            lastModified: new Date().toISOString(),
+                            totalTodos: legacyTodos.length,
+                            completedTodos: legacyTodos.filter(t => t.status === 'completed').length
+                        }
+                    }
+                };
+                await fs.writeFile(this.metadataFile, JSON.stringify(metadata, null, 2));
+                // Remove legacy file
+                await fs.unlink(this.legacyTodoFile);
+            }
         }
         catch (error) {
-            // Directory might already exist
+            // No legacy file or other error, continue
         }
-        await fs.writeFile(this.todoFile, JSON.stringify(this.todos, null, 2));
+    }
+    async ensureDefaultList() {
+        try {
+            await fs.access(this.metadataFile);
+        }
+        catch {
+            // Create default metadata and list
+            const metadata = {
+                activeList: 'default',
+                lists: {
+                    default: {
+                        description: 'Default todo list',
+                        created: new Date().toISOString(),
+                        lastModified: new Date().toISOString(),
+                        totalTodos: 0,
+                        completedTodos: 0
+                    }
+                }
+            };
+            await fs.writeFile(this.metadataFile, JSON.stringify(metadata, null, 2));
+            const defaultListFile = path.join(this.listsDir, 'default.json');
+            await fs.writeFile(defaultListFile, JSON.stringify([], null, 2));
+        }
+    }
+    async loadMetadata() {
+        try {
+            const data = await fs.readFile(this.metadataFile, 'utf8');
+            return JSON.parse(data);
+        }
+        catch (error) {
+            throw new Error('Failed to load metadata');
+        }
+    }
+    async saveMetadata(metadata) {
+        await fs.writeFile(this.metadataFile, JSON.stringify(metadata, null, 2));
+    }
+    async loadList(listName) {
+        try {
+            const listFile = path.join(this.listsDir, `${listName}.json`);
+            const data = await fs.readFile(listFile, 'utf8');
+            return JSON.parse(data);
+        }
+        catch (error) {
+            throw new Error(`List '${listName}' not found`);
+        }
+    }
+    async saveList(listName, todos) {
+        const listFile = path.join(this.listsDir, `${listName}.json`);
+        await fs.writeFile(listFile, JSON.stringify(todos, null, 2));
+        // Update metadata
+        const metadata = await this.loadMetadata();
+        if (metadata.lists[listName]) {
+            metadata.lists[listName].lastModified = new Date().toISOString();
+            metadata.lists[listName].totalTodos = todos.length;
+            metadata.lists[listName].completedTodos = todos.filter(t => t.status === 'completed').length;
+            await this.saveMetadata(metadata);
+        }
     }
     generateId() {
         return Date.now().toString() + Math.random().toString(36).substring(2, 11);
     }
-    async readTodos() {
-        await this.loadTodos();
-        return this.todos;
+    async createList(listName, description) {
+        if (!listName || listName.includes('/') || listName.includes('\\')) {
+            throw new Error('Invalid list name');
+        }
+        const metadata = await this.loadMetadata();
+        if (metadata.lists[listName]) {
+            throw new Error(`List '${listName}' already exists`);
+        }
+        // Create new list
+        const newList = {
+            description: description || '',
+            created: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            totalTodos: 0,
+            completedTodos: 0
+        };
+        metadata.lists[listName] = newList;
+        await this.saveMetadata(metadata);
+        // Create empty list file
+        const listFile = path.join(this.listsDir, `${listName}.json`);
+        await fs.writeFile(listFile, JSON.stringify([], null, 2));
+        return { name: listName, ...newList };
     }
-    async writeTodos(todos) {
-        this.todos = todos;
-        await this.saveTodos();
-        return this.todos;
+    async deleteList(listName) {
+        if (listName === 'default') {
+            throw new Error('Cannot delete default list');
+        }
+        const metadata = await this.loadMetadata();
+        if (!metadata.lists[listName]) {
+            throw new Error(`List '${listName}' not found`);
+        }
+        // Remove from metadata
+        delete metadata.lists[listName];
+        // If this was the active list, switch to default
+        if (metadata.activeList === listName) {
+            metadata.activeList = 'default';
+        }
+        await this.saveMetadata(metadata);
+        // Remove list file
+        const listFile = path.join(this.listsDir, `${listName}.json`);
+        try {
+            await fs.unlink(listFile);
+        }
+        catch (error) {
+            // File might not exist, continue
+        }
     }
-    async addTodo(content, priority = 'medium') {
-        await this.loadTodos();
+    async switchActiveList(listName) {
+        const metadata = await this.loadMetadata();
+        if (!metadata.lists[listName]) {
+            throw new Error(`List '${listName}' not found`);
+        }
+        metadata.activeList = listName;
+        await this.saveMetadata(metadata);
+    }
+    async listTodoLists() {
+        const metadata = await this.loadMetadata();
+        return Object.entries(metadata.lists).map(([name, listData]) => ({
+            name,
+            ...listData
+        }));
+    }
+    async getActiveListName() {
+        const metadata = await this.loadMetadata();
+        return metadata.activeList;
+    }
+    async readTodos(listName) {
+        const targetList = listName || await this.getActiveListName();
+        return await this.loadList(targetList);
+    }
+    async writeTodos(todos, listName) {
+        const targetList = listName || await this.getActiveListName();
+        await this.saveList(targetList, todos);
+        return todos;
+    }
+    async addTodo(content, priority = 'medium', listName) {
+        const targetList = listName || await this.getActiveListName();
+        const todos = await this.loadList(targetList);
         const newTodo = {
             id: this.generateId(),
             content: content,
             status: 'pending',
             priority: priority
         };
-        this.todos.push(newTodo);
-        await this.saveTodos();
+        todos.push(newTodo);
+        await this.saveList(targetList, todos);
         return newTodo;
     }
-    async updateTodo(id, updates) {
-        await this.loadTodos();
-        const todoIndex = this.todos.findIndex(todo => todo.id === id);
+    async updateTodo(id, updates, listName) {
+        const targetList = listName || await this.getActiveListName();
+        const todos = await this.loadList(targetList);
+        const todoIndex = todos.findIndex(todo => todo.id === id);
         if (todoIndex === -1) {
-            throw new Error(`Todo with id ${id} not found`);
+            throw new Error(`Todo with id ${id} not found in list '${targetList}'`);
         }
-        const currentTodo = this.todos[todoIndex];
+        const currentTodo = todos[todoIndex];
         const updatedTodo = {
             id: currentTodo.id,
             content: updates.content ?? currentTodo.content,
             status: updates.status ?? currentTodo.status,
             priority: updates.priority ?? currentTodo.priority,
         };
-        this.todos[todoIndex] = updatedTodo;
-        await this.saveTodos();
+        todos[todoIndex] = updatedTodo;
+        await this.saveList(targetList, todos);
         return updatedTodo;
     }
-    async deleteTodo(id) {
-        await this.loadTodos();
-        const todoIndex = this.todos.findIndex(todo => todo.id === id);
+    async deleteTodo(id, listName) {
+        const targetList = listName || await this.getActiveListName();
+        const todos = await this.loadList(targetList);
+        const todoIndex = todos.findIndex(todo => todo.id === id);
         if (todoIndex === -1) {
-            throw new Error(`Todo with id ${id} not found`);
+            throw new Error(`Todo with id ${id} not found in list '${targetList}'`);
         }
-        const deletedTodo = this.todos.splice(todoIndex, 1)[0];
-        await this.saveTodos();
+        const deletedTodo = todos.splice(todoIndex, 1)[0];
+        await this.saveList(targetList, todos);
         return deletedTodo;
     }
 }
 const server = new Server({
     name: "todosystem-mcp",
-    version: "1.0.0",
+    version: "2.0.0",
 }, {
     capabilities: {
         tools: {},
@@ -122,7 +281,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 description: "Read the current todo list",
                 inputSchema: {
                     type: "object",
-                    properties: {},
+                    properties: {
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list to read (optional, defaults to active list)"
+                        }
+                    },
                     additionalProperties: false,
                 },
             },
@@ -152,6 +316,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                                 required: ["id", "content", "status", "priority"],
                                 additionalProperties: false
                             }
+                        },
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list to write to (optional, defaults to active list)"
                         }
                     },
                     required: ["todos"],
@@ -173,6 +341,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                             enum: ["high", "medium", "low"],
                             description: "Priority of the todo item",
                             default: "medium"
+                        },
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list to add to (optional, defaults to active list)"
                         }
                     },
                     required: ["content"],
@@ -202,6 +374,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                             type: "string",
                             enum: ["high", "medium", "low"],
                             description: "Updated priority (optional)",
+                        },
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list containing the item (optional, defaults to active list)"
                         }
                     },
                     required: ["id"],
@@ -217,9 +393,71 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         id: {
                             type: "string",
                             description: "The ID of the todo item to delete",
+                        },
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list containing the item (optional, defaults to active list)"
                         }
                     },
                     required: ["id"],
+                    additionalProperties: false,
+                },
+            },
+            {
+                name: "todo_list_create",
+                description: "Create a new todo list",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        list_name: {
+                            type: "string",
+                            description: "Name of the new todo list",
+                        },
+                        description: {
+                            type: "string",
+                            description: "Description of the todo list (optional)",
+                        }
+                    },
+                    required: ["list_name"],
+                    additionalProperties: false,
+                },
+            },
+            {
+                name: "todo_list_delete",
+                description: "Delete a todo list (cannot delete 'default' list)",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list to delete",
+                        }
+                    },
+                    required: ["list_name"],
+                    additionalProperties: false,
+                },
+            },
+            {
+                name: "todo_lists",
+                description: "List all available todo lists with their metadata",
+                inputSchema: {
+                    type: "object",
+                    properties: {},
+                    additionalProperties: false,
+                },
+            },
+            {
+                name: "todo_list_switch",
+                description: "Switch the active todo list",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        list_name: {
+                            type: "string",
+                            description: "Name of the todo list to make active",
+                        }
+                    },
+                    required: ["list_name"],
                     additionalProperties: false,
                 },
             },
@@ -231,7 +469,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
         switch (name) {
             case "todo_read": {
-                const todos = await todoManager.readTodos();
+                const typedArgs = (args || {});
+                const todos = await todoManager.readTodos(typedArgs.list_name);
+                const activeList = typedArgs.list_name || await todoManager.getActiveListName();
                 return {
                     content: [
                         {
@@ -242,31 +482,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "todo_write": {
-                const typedArgs = args;
-                const updatedTodos = await todoManager.writeTodos(typedArgs.todos);
+                const typedArgs = (args || {});
+                if (!typedArgs.todos) {
+                    throw new Error('todos parameter is required');
+                }
+                const updatedTodos = await todoManager.writeTodos(typedArgs.todos, typedArgs.list_name);
+                const targetList = typedArgs.list_name || await todoManager.getActiveListName();
                 return {
                     content: [
                         {
                             type: "text",
-                            text: `Updated todo list with ${updatedTodos.length} items`,
+                            text: `Updated todo list '${targetList}' with ${updatedTodos.length} items`,
                         },
                     ],
                 };
             }
             case "todo_add": {
-                const typedArgs = args;
-                const newTodo = await todoManager.addTodo(typedArgs.content, typedArgs.priority);
+                const typedArgs = (args || {});
+                if (!typedArgs.content) {
+                    throw new Error('content parameter is required');
+                }
+                const newTodo = await todoManager.addTodo(typedArgs.content, typedArgs.priority, typedArgs.list_name);
+                const targetList = typedArgs.list_name || await todoManager.getActiveListName();
                 return {
                     content: [
                         {
                             type: "text",
-                            text: `Added new todo: ${JSON.stringify(newTodo, null, 2)}`,
+                            text: `Added new todo to '${targetList}': ${JSON.stringify(newTodo, null, 2)}`,
                         },
                     ],
                 };
             }
             case "todo_update": {
-                const typedArgs = args;
+                const typedArgs = (args || {});
+                if (!typedArgs.id) {
+                    throw new Error('id parameter is required');
+                }
                 const updates = {};
                 if (typedArgs.content !== undefined)
                     updates.content = typedArgs.content;
@@ -274,24 +525,93 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     updates.status = typedArgs.status;
                 if (typedArgs.priority !== undefined)
                     updates.priority = typedArgs.priority;
-                const updatedTodo = await todoManager.updateTodo(typedArgs.id, updates);
+                const updatedTodo = await todoManager.updateTodo(typedArgs.id, updates, typedArgs.list_name);
+                const targetList = typedArgs.list_name || await todoManager.getActiveListName();
                 return {
                     content: [
                         {
                             type: "text",
-                            text: `Updated todo: ${JSON.stringify(updatedTodo, null, 2)}`,
+                            text: `Updated todo in '${targetList}': ${JSON.stringify(updatedTodo, null, 2)}`,
                         },
                     ],
                 };
             }
             case "todo_delete": {
-                const typedArgs = args;
-                const deletedTodo = await todoManager.deleteTodo(typedArgs.id);
+                const typedArgs = (args || {});
+                if (!typedArgs.id) {
+                    throw new Error('id parameter is required');
+                }
+                const deletedTodo = await todoManager.deleteTodo(typedArgs.id, typedArgs.list_name);
+                const targetList = typedArgs.list_name || await todoManager.getActiveListName();
                 return {
                     content: [
                         {
                             type: "text",
-                            text: `Deleted todo: ${JSON.stringify(deletedTodo, null, 2)}`,
+                            text: `Deleted todo from '${targetList}': ${JSON.stringify(deletedTodo, null, 2)}`,
+                        },
+                    ],
+                };
+            }
+            case "todo_list_create": {
+                const typedArgs = (args || {});
+                if (!typedArgs.list_name) {
+                    throw new Error('list_name parameter is required');
+                }
+                const newList = await todoManager.createList(typedArgs.list_name, typedArgs.description);
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Created new todo list: ${JSON.stringify(newList, null, 2)}`,
+                        },
+                    ],
+                };
+            }
+            case "todo_list_delete": {
+                const typedArgs = (args || {});
+                if (!typedArgs.list_name) {
+                    throw new Error('list_name parameter is required');
+                }
+                await todoManager.deleteList(typedArgs.list_name);
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Deleted todo list '${typedArgs.list_name}'`,
+                        },
+                    ],
+                };
+            }
+            case "todo_lists": {
+                const lists = await todoManager.listTodoLists();
+                const activeList = await todoManager.getActiveListName();
+                const response = {
+                    activeList,
+                    lists: lists.map(list => ({
+                        ...list,
+                        isActive: list.name === activeList
+                    }))
+                };
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(response, null, 2),
+                        },
+                    ],
+                };
+            }
+            case "todo_list_switch": {
+                const typedArgs = (args || {});
+                if (!typedArgs.list_name) {
+                    throw new Error('list_name parameter is required');
+                }
+                await todoManager.switchActiveList(typedArgs.list_name);
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Switched active todo list to '${typedArgs.list_name}'`,
                         },
                     ],
                 };

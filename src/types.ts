@@ -19,11 +19,32 @@ export interface TodoItem {
 }
 
 /**
+ * Todo List metadata interface
+ */
+export interface TodoList {
+  name: string;
+  description?: string;
+  created: string; // ISO date string
+  lastModified: string; // ISO date string
+  totalTodos: number;
+  completedTodos: number;
+}
+
+/**
+ * Todo lists metadata storage interface
+ */
+export interface TodoListsMetadata {
+  activeList: string;
+  lists: Record<string, Omit<TodoList, 'name'>>;
+}
+
+/**
  * Parameters for adding a new todo
  */
 export interface AddTodoParams {
   content: string;
   priority?: TodoPriority;
+  list_name?: string; // Optional list name, defaults to active list
 }
 
 /**
@@ -34,6 +55,7 @@ export interface UpdateTodoParams {
   content?: string;
   status?: TodoStatus;
   priority?: TodoPriority;
+  list_name?: string; // Optional list name, defaults to active list
 }
 
 /**
@@ -41,6 +63,7 @@ export interface UpdateTodoParams {
  */
 export interface DeleteTodoParams {
   id: string;
+  list_name?: string; // Optional list name, defaults to active list
 }
 
 /**
@@ -48,6 +71,36 @@ export interface DeleteTodoParams {
  */
 export interface WriteTodosParams {
   todos: TodoItem[];
+  list_name?: string; // Optional list name, defaults to active list
+}
+
+/**
+ * Parameters for reading todo list
+ */
+export interface ReadTodosParams {
+  list_name?: string; // Optional list name, defaults to active list
+}
+
+/**
+ * Parameters for creating a new todo list
+ */
+export interface CreateListParams {
+  list_name: string;
+  description?: string;
+}
+
+/**
+ * Parameters for deleting a todo list
+ */
+export interface DeleteListParams {
+  list_name: string;
+}
+
+/**
+ * Parameters for switching active todo list
+ */
+export interface SwitchListParams {
+  list_name: string;
 }
 
 /**
@@ -69,4 +122,13 @@ export interface MCPToolResponse {
 /**
  * MCP Tool call arguments - generic type for tool parameters
  */
-export type MCPToolArgs = AddTodoParams | UpdateTodoParams | DeleteTodoParams | WriteTodosParams | Record<string, never>; 
+export type MCPToolArgs = 
+  | AddTodoParams 
+  | UpdateTodoParams 
+  | DeleteTodoParams 
+  | WriteTodosParams 
+  | ReadTodosParams
+  | CreateListParams
+  | DeleteListParams
+  | SwitchListParams
+  | Record<string, never>; 
