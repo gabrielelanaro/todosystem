@@ -2,7 +2,7 @@
   {
     "id": "1750604668774l6cu5a1z9",
     "content": "Complete project documentation",
-    "status": "in_progress",
+    "status": "completed",
     "priority": "high"
   },
   {
@@ -14,6 +14,24 @@
   {
     "id": "175060467258493nectvav",
     "content": "Write README examples",
+    "status": "pending",
+    "priority": "low"
+  },
+  {
+    "id": "1750605343967t7jywz0sy",
+    "content": "Test high priority task",
+    "status": "in_progress",
+    "priority": "high"
+  },
+  {
+    "id": "1750605344069w45vq2arp",
+    "content": "Regular task",
+    "status": "pending",
+    "priority": "medium"
+  },
+  {
+    "id": "1750605344157f2pjnagmg",
+    "content": "Low priority task",
     "status": "pending",
     "priority": "low"
   }
