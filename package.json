@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
+    "prepare": "npx tsc",
     "start:mcp": "npm run build && node dist/todosystem.mcp",
     "start:cli": "npm run build && node dist/cli.js",
     "dev": "npm run build && node --watch dist/cli.js",
