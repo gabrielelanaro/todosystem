@@ -23,13 +23,13 @@ A comprehensive CLI tool that replicates Claude Code's todo system for Cursor us
 
 ## Installation
 
-### Direct from GitHub (Recommended)
+### From npm (Recommended)
 
 ```bash
-npm install -g git+https://github.com/gabrielelanaro/todosystem.git
+npm install -g todosystem
 ```
 
-### From Source (Alternative)
+### From Source (Development)
 
 ```bash
 git clone https://github.com/gabrielelanaro/todosystem.git
@@ -39,13 +39,19 @@ npm run build
 npm install -g .
 ```
 
-Both methods work reliably. The GitHub installation automatically builds the project during installation.
+### Direct from GitHub (Alternative)
+
+```bash
+npm install -g git+https://github.com/gabrielelanaro/todosystem.git
+```
+
+**Note**: npm installation is the most reliable method. GitHub direct installation can sometimes have issues.
 
 ## Quick Start
 
-1. **Install TodoSystem directly from GitHub:**
+1. **Install TodoSystem from npm:**
    ```bash
-   npm install -g git+https://github.com/gabrielelanaro/todosystem.git
+   npm install -g todosystem
    ```
 
 2. **Initialize in your project:**
