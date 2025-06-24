@@ -108,3 +108,16 @@ export interface MCPToolResponse {
  * MCP Tool call arguments - generic type for tool parameters
  */
 export type MCPToolArgs = AddTodoParams | UpdateTodoParams | DeleteTodoParams | WriteTodosParams | ReadTodosParams | CreateListParams | DeleteListParams | SwitchListParams | Record<string, never>;
+/**
+ * Get the todo system directory path
+ * Priority:
+ * 1. TODOSYSTEM_DIR environment variable
+ * 2. User home directory + .todosystem
+ * 3. Fallback to current working directory + .todosystem
+ */
+export declare function getTodoSystemDir(): string;
+/**
+ * Check if there's an existing .todosystem directory in the current project
+ * that should be migrated to the new location
+ */
+export declare function getProjectTodoSystemDir(): string;

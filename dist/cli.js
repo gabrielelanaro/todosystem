@@ -6,11 +6,12 @@ import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import boxen from 'boxen';
 import Table from 'cli-table3';
+import { getTodoSystemDir, } from './types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 class TodoSystemCLI {
     constructor() {
-        this.todoSystemDir = path.join(process.cwd(), '.todosystem');
+        this.todoSystemDir = getTodoSystemDir();
         this.listsDir = path.join(this.todoSystemDir, 'lists');
         this.metadataFile = path.join(this.todoSystemDir, 'metadata.json');
         this.legacyTodoFile = path.join(this.todoSystemDir, 'todos.json');
@@ -284,25 +285,23 @@ class TodoSystemCLI {
         display += chalk.yellow(`⏳ Pending: ${pending.length}\n`);
         display += chalk.blue(`🔄 In Progress: ${inProgress.length}\n`);
         display += chalk.green(`✅ Completed: ${completed.length}\n\n`);
-        // High priority items
-        const highPriority = todos.filter(t => t.priority === 'high' && t.status !== 'completed');
-        if (highPriority.length > 0) {
-            display += chalk.red.bold('🚨 High Priority Items:\n');
-            highPriority.forEach(todo => {
-                const icon = todo.status === 'in_progress' ? '🔄' : '⏳';
-                display += chalk.red(`  ${icon} ${todo.content}\n`);
-            });
-            display += '\n';
-        }
-        // In progress items
-        if (inProgress.length > 0) {
-            display += chalk.blue.bold('🔄 Currently Working On:\n');
-            inProgress.forEach(todo => {
-                const priorityIcon = todo.priority === 'high' ? '🔥' :
-                    todo.priority === 'medium' ? '⚡' : '📝';
-                display += chalk.blue(`  ${priorityIcon} ${todo.content}\n`);
-            });
-        }
+        // Simple todo list in order
+        display += chalk.bold('📝 Todo List:\n');
+        todos.forEach((todo, index) => {
+            const number = `${index + 1}.`.padEnd(3);
+            const priorityIcon = todo.priority === 'high' ? '🔥' :
+                todo.priority === 'medium' ? '⚡' : '📝';
+            if (todo.status === 'completed') {
+                const strikethrough = todo.content.split('').map(char => char + '\u0336').join('');
+                display += chalk.green(`${number}${priorityIcon} `) + chalk.gray(`${strikethrough}`) + chalk.green(` ✓\n`);
+            }
+            else if (todo.status === 'in_progress') {
+                display += chalk.blue(`${number}${priorityIcon} ${todo.content} 🔄\n`);
+            }
+            else {
+                display += chalk.white(`${number}${priorityIcon} ${todo.content}\n`);
+            }
+        });
         return boxen(display, {
             padding: 1,
             margin: 1,
@@ -330,26 +329,24 @@ class TodoSystemCLI {
         display += chalk.yellow(`⏳ Pending: ${pending.length}\n`);
         display += chalk.blue(`🔄 In Progress: ${inProgress.length}\n`);
         display += chalk.green(`✅ Completed: ${completed.length}\n\n`);
-        // High priority items
-        const highPriority = todos.filter(t => t.priority === 'high' && t.status !== 'completed');
-        if (highPriority.length > 0) {
-            display += chalk.red.bold('🚨 High Priority Items:\n');
-            highPriority.forEach(todo => {
-                const icon = todo.status === 'in_progress' ? '🔄' : '⏳';
-                display += chalk.red(`  ${icon} ${todo.content}\n`);
-            });
-            display += '\n';
-        }
-        // In progress items
-        if (inProgress.length > 0) {
-            display += chalk.blue.bold('🔄 Currently Working On:\n');
-            inProgress.forEach(todo => {
-                const priorityIcon = todo.priority === 'high' ? '🔥' :
-                    todo.priority === 'medium' ? '⚡' : '📝';
-                display += chalk.blue(`  ${priorityIcon} ${todo.content}\n`);
-            });
-            display += '\n';
-        }
+        // Simple todo list in order
+        display += chalk.bold('📝 Todo List:\n');
+        todos.forEach((todo, index) => {
+            const number = `${index + 1}.`.padEnd(3);
+            const priorityIcon = todo.priority === 'high' ? '🔥' :
+                todo.priority === 'medium' ? '⚡' : '📝';
+            if (todo.status === 'completed') {
+                const strikethrough = todo.content.split('').map(char => char + '\u0336').join('');
+                display += chalk.green(`${number}${priorityIcon} `) + chalk.gray(`${strikethrough}`) + chalk.green(` ✓\n`);
+            }
+            else if (todo.status === 'in_progress') {
+                display += chalk.blue(`${number}${priorityIcon} ${todo.content} 🔄\n`);
+            }
+            else {
+                display += chalk.white(`${number}${priorityIcon} ${todo.content}\n`);
+            }
+        });
+        display += '\n';
         display += chalk.gray('Press Ctrl+C to exit');
         return boxen(display, {
             padding: 1,

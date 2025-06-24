@@ -5,11 +5,13 @@ import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextpro
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getTodoSystemDir, } from "./types.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 class TodoManager {
     constructor() {
-        this.todoFile = path.join(__dirname, '..', 'todos.json');
+        const todoSystemDir = getTodoSystemDir();
+        this.todoFile = path.join(todoSystemDir, 'todos.json');
         this.todos = [];
         this.loadTodos();
     }

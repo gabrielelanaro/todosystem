@@ -6,7 +6,6 @@ export declare class TodoManager {
     private metadataFile;
     private legacyTodoFile;
     constructor();
-    private findTodoSystemDir;
     private init;
     private ensureDirectories;
     private migrateLegacyData;
